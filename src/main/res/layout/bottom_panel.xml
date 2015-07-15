@@ -56,7 +56,7 @@
                 android:background="@drawable/volume" />
         </RelativeLayout>
         <LinearLayout
-            android:id="@+id/play_stop"
+            android:id="@+id/controls"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -75,7 +75,8 @@
                 android:id="@+id/play"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/ic_media_play" />
+                />
+            <!--android:background="@drawable/play"-->
             <ImageView
                 android:id="@+id/next"
                 android:layout_width="wrap_content"

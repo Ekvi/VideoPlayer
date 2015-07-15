@@ -1,14 +1,17 @@
 package com.ekvilan.videoplayer;
 
 import android.app.Activity;
+import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.support.v4.content.res.ResourcesCompat;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 
@@ -23,6 +26,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
     private PopupWindow topPanel;
     private PopupWindow bottomPanel;
     private RelativeLayout layout;
+    private ImageView btnPlay;
 
     private boolean isShow = false;
 
@@ -53,6 +57,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
         topPanel = new PopupWindow(top, MATCH_PARENT, WRAP_CONTENT);
         bottomPanel = new PopupWindow(bottom, MATCH_PARENT, WRAP_CONTENT);
 
+        initViewImages(bottom);
+    }
+
+    private void initViewImages(View bottom) {
+        btnPlay = (ImageView) bottom.findViewById(R.id.play);
     }
 
     private void initVideoHolder() {
@@ -65,12 +74,23 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
         surfaceView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isShow) {
-                    dismissPanels();
-                    isShow = false;
-                } else {
+                if (!isShow) {
                     showPanels();
                     isShow = true;
+                    startTimer();
+                }
+            }
+        });
+
+        btnPlay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                    setPlayImageView(ResourcesCompat.getDrawable(getResources(), R.drawable.play, null));
+                } else {
+                    mediaPlayer.start();
+                    setPlayImageView(ResourcesCompat.getDrawable(getResources(), R.drawable.pause, null));
                     startTimer();
                 }
             }
@@ -100,8 +120,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        dismissPanels();
-                        isShow = false;
+                        if(mediaPlayer.isPlaying()) {
+                            dismissPanels();
+                            isShow = false;
+                        }
                     }
                 });
             }
@@ -136,5 +158,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
     @Override
     public void onPrepared(MediaPlayer mp) {
         mediaPlayer.start();
+
+        setPlayImageView(ResourcesCompat.getDrawable(getResources(), R.drawable.pause, null));
+    }
+
+    private void setPlayImageView(Drawable drawable) {
+        btnPlay.setImageDrawable(drawable);
     }
 }

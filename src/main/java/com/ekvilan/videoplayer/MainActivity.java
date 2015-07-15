@@ -9,82 +9,103 @@ import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 
 
+import static android.view.ViewGroup.LayoutParams.*;
+
+
 public class MainActivity extends Activity implements SurfaceHolder.Callback, MediaPlayer.OnPreparedListener {
     private MediaPlayer mediaPlayer;
-    private SurfaceHolder vidHolder;
-    private SurfaceView vidSurface;
+    private SurfaceHolder surfaceHolder;
+    private SurfaceView surfaceView;
+    private PopupWindow topPanel;
+    private PopupWindow bottomPanel;
+    private RelativeLayout layout;
+
+    private boolean isShow = false;
+
     //String vidAddress = "https://archive.org/download/ksnn_compilation_master_the_internet/ksnn_compilation_master_the_internet_512kb.mp4";
     //String vidAddress = "http://testapi.qix.sx/video/sky.mp4";
     String vidAddress = "http://testapi.qix.sx/video/mamahohotala.mp4";
 
-    private boolean isShowTop = false;
-    //boolean click = false;
-
-    Button btnClick;
-    PopupWindow topWindow;
-    PopupWindow bottomWindow;
-    RelativeLayout layout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        showTopWindow();
-        showBottomWindow();
         layout = (RelativeLayout)findViewById(R.id.mainLayout);
 
-        vidSurface = (SurfaceView) findViewById(R.id.surfView);
-        vidHolder = vidSurface.getHolder();
-        vidHolder.addCallback(this);
+        initPanels();
+        initVideoHolder();
 
-        vidSurface.setOnClickListener(new View.OnClickListener() {
+        addListeners();
+    }
+
+    private void initPanels() {
+        LayoutInflater layoutInflater = (LayoutInflater) getBaseContext()
+                .getSystemService(LAYOUT_INFLATER_SERVICE);
+        View top = layoutInflater.inflate(R.layout.top_panel, null);
+        View bottom = layoutInflater.inflate(R.layout.bottom_panel, null);
+
+        topPanel = new PopupWindow(top, MATCH_PARENT, WRAP_CONTENT);
+        bottomPanel = new PopupWindow(bottom, MATCH_PARENT, WRAP_CONTENT);
+
+    }
+
+    private void initVideoHolder() {
+        surfaceView = (SurfaceView) findViewById(R.id.surfView);
+        surfaceHolder = surfaceView.getHolder();
+        surfaceHolder.addCallback(this);
+    }
+
+    private void addListeners() {
+        surfaceView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isShowTop) {
-                    topWindow.dismiss();
-                    bottomWindow.dismiss();
-                    isShowTop = false;
-                }
-                else {
-                    topWindow.showAtLocation(layout, Gravity.TOP, 0, 20);
-                    //topWindow.update(20, 20, 300, 80);
-                    bottomWindow.showAtLocation(layout, Gravity.BOTTOM, 0, 0);
-                    //bottomWindow.update(20, 20, 300, 80);
-                    isShowTop = true;
+                if (isShow) {
+                    dismissPanels();
+                    isShow = false;
+                } else {
+                    showPanels();
+                    isShow = true;
+                    startTimer();
                 }
             }
         });
-
-
-
-
     }
 
-
-
-    private void showTopWindow() {
-        LayoutInflater layoutInflater = (LayoutInflater) getBaseContext()
-                .getSystemService(LAYOUT_INFLATER_SERVICE);
-        View popupView = layoutInflater.inflate(R.layout.top_panel, null);
-        topWindow = new PopupWindow(popupView,
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+    private void showPanels() {
+        topPanel.showAtLocation(layout, Gravity.TOP, 0, 20);
+        bottomPanel.showAtLocation(layout, Gravity.BOTTOM, 0, 0);
     }
 
-    private void showBottomWindow() {
-        LayoutInflater layoutInflater = (LayoutInflater) getBaseContext()
-                .getSystemService(LAYOUT_INFLATER_SERVICE);
-        View popupView = layoutInflater.inflate(R.layout.bottom_panel, null);
-        /*bottomWindow = new PopupWindow(popupView,
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);*/
-        bottomWindow = new PopupWindow(popupView,
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+    private void dismissPanels() {
+        topPanel.dismiss();
+        bottomPanel.dismiss();
+    }
+
+    private void startTimer() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        dismissPanels();
+                        isShow = false;
+                    }
+                });
+            }
+        }).start();
     }
 
     @Override
@@ -96,7 +117,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
     public void surfaceCreated(SurfaceHolder arg0) {
         try {
             mediaPlayer = new MediaPlayer();
-            mediaPlayer.setDisplay(vidHolder);
+            mediaPlayer.setDisplay(surfaceHolder);
             mediaPlayer.setDataSource(vidAddress);
             mediaPlayer.prepare();
             mediaPlayer.setOnPreparedListener(this);

@@ -27,8 +27,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
     private PopupWindow bottomPanel;
     private RelativeLayout layout;
     private ImageView btnPlay;
+    private ImageView btnSound;
 
     private boolean isShow = false;
+    private boolean isMute = false;
 
     //String vidAddress = "https://archive.org/download/ksnn_compilation_master_the_internet/ksnn_compilation_master_the_internet_512kb.mp4";
     //String vidAddress = "http://testapi.qix.sx/video/sky.mp4";
@@ -62,6 +64,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
 
     private void initViewImages(View bottom) {
         btnPlay = (ImageView) bottom.findViewById(R.id.play);
+        btnSound = (ImageView) bottom.findViewById(R.id.sound);
     }
 
     private void initVideoHolder() {
@@ -92,6 +95,21 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
                     mediaPlayer.start();
                     setPlayImageView(ResourcesCompat.getDrawable(getResources(), R.drawable.pause, null));
                     startTimer();
+                }
+            }
+        });
+
+        btnSound.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!isMute) {
+                    setSoundImageView(ResourcesCompat.getDrawable(getResources(), R.drawable.volume_off, null));
+                    setVolume(0f);
+                    isMute = true;
+                } else {
+                    setSoundImageView(ResourcesCompat.getDrawable(getResources(), R.drawable.volume_on, null));
+                    setVolume(1);
+                    isMute = false;
                 }
             }
         });
@@ -160,9 +178,18 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
         mediaPlayer.start();
 
         setPlayImageView(ResourcesCompat.getDrawable(getResources(), R.drawable.pause, null));
+        setSoundImageView(ResourcesCompat.getDrawable(getResources(), R.drawable.volume_on, null));
     }
 
     private void setPlayImageView(Drawable drawable) {
         btnPlay.setImageDrawable(drawable);
+    }
+
+    private void setSoundImageView(Drawable drawable) {
+        btnSound.setImageDrawable(drawable);
+    }
+
+    private void setVolume(float value) {
+        mediaPlayer.setVolume(value, value);
     }
 }

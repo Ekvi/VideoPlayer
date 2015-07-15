@@ -72,7 +72,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
     private void showTopWindow() {
         LayoutInflater layoutInflater = (LayoutInflater) getBaseContext()
                 .getSystemService(LAYOUT_INFLATER_SERVICE);
-        View popupView = layoutInflater.inflate(R.layout.popup_top, null);
+        View popupView = layoutInflater.inflate(R.layout.top_panel, null);
         topWindow = new PopupWindow(popupView,
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
     }
@@ -80,7 +80,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
     private void showBottomWindow() {
         LayoutInflater layoutInflater = (LayoutInflater) getBaseContext()
                 .getSystemService(LAYOUT_INFLATER_SERVICE);
-        View popupView = layoutInflater.inflate(R.layout.popup_bottom, null);
+        View popupView = layoutInflater.inflate(R.layout.bottom_panel, null);
         /*bottomWindow = new PopupWindow(popupView,
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);*/
         bottomWindow = new PopupWindow(popupView,

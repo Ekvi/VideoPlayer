@@ -5,6 +5,8 @@ import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.content.res.ResourcesCompat;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -13,13 +15,20 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static android.view.ViewGroup.LayoutParams.*;
 
 
 public class MainActivity extends Activity implements SurfaceHolder.Callback, MediaPlayer.OnPreparedListener {
+    private final int OFFSET = 30 * 1000;
+    
     private MediaPlayer mediaPlayer;
     private SurfaceHolder surfaceHolder;
     private SurfaceView surfaceView;
@@ -28,9 +37,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
     private RelativeLayout layout;
     private ImageView btnPlay;
     private ImageView btnSound;
+    private ImageView btnForward;
+    private ImageView btnRewind;
+    private ProgressBar progressBar;
 
     private boolean isShow = false;
     private boolean isMute = false;
+
 
     //String vidAddress = "https://archive.org/download/ksnn_compilation_master_the_internet/ksnn_compilation_master_the_internet_512kb.mp4";
     //String vidAddress = "http://testapi.qix.sx/video/sky.mp4";
@@ -65,6 +78,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
     private void initViewImages(View bottom) {
         btnPlay = (ImageView) bottom.findViewById(R.id.play);
         btnSound = (ImageView) bottom.findViewById(R.id.sound);
+        btnForward = (ImageView) bottom.findViewById(R.id.fast_forward);
+        btnRewind = (ImageView) bottom.findViewById(R.id.fast_rewind);
+        progressBar = (ProgressBar) bottom.findViewById(R.id.progressBar);
     }
 
     private void initVideoHolder() {
@@ -90,10 +106,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
             public void onClick(View v) {
                 if(mediaPlayer.isPlaying()) {
                     mediaPlayer.pause();
-                    setPlayImageView(ResourcesCompat.getDrawable(getResources(), R.drawable.play, null));
+                    setPlayImageView(
+                            ResourcesCompat.getDrawable(getResources(), R.drawable.play, null));
                 } else {
                     mediaPlayer.start();
-                    setPlayImageView(ResourcesCompat.getDrawable(getResources(), R.drawable.pause, null));
+                    setPlayImageView(
+                            ResourcesCompat.getDrawable(getResources(), R.drawable.pause, null));
                     startTimer();
                 }
             }
@@ -103,14 +121,30 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
             @Override
             public void onClick(View v) {
                 if(!isMute) {
-                    setSoundImageView(ResourcesCompat.getDrawable(getResources(), R.drawable.volume_off, null));
+                    setSoundImageView(
+                            ResourcesCompat.getDrawable(getResources(), R.drawable.volume_off, null));
                     setVolume(0f);
                     isMute = true;
                 } else {
-                    setSoundImageView(ResourcesCompat.getDrawable(getResources(), R.drawable.volume_on, null));
+                    setSoundImageView(
+                            ResourcesCompat.getDrawable(getResources(), R.drawable.volume_on, null));
                     setVolume(1);
                     isMute = false;
                 }
+            }
+        });
+
+        btnForward.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setOffset(OFFSET);
+            }
+        });
+
+        btnRewind.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setOffset(-OFFSET);
             }
         });
     }
@@ -177,6 +211,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
     public void onPrepared(MediaPlayer mp) {
         mediaPlayer.start();
 
+        updateProgressBar();
+
         setPlayImageView(ResourcesCompat.getDrawable(getResources(), R.drawable.pause, null));
         setSoundImageView(ResourcesCompat.getDrawable(getResources(), R.drawable.volume_on, null));
     }
@@ -191,5 +227,29 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
 
     private void setVolume(float value) {
         mediaPlayer.setVolume(value, value);
+    }
+
+    private void updateProgressBar() {
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        scheduledExecutorService.scheduleWithFixedDelay(
+                new Runnable(){
+                    @Override
+                    public void run() {
+                        monitorHandler.sendMessage(monitorHandler.obtainMessage());
+                    }}, 200, 200, TimeUnit.MILLISECONDS);
+    }
+
+    private Handler monitorHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            progressBar.setMax(mediaPlayer.getDuration());
+            progressBar.setProgress(mediaPlayer.getCurrentPosition() + msg.what);
+
+        }
+    };
+
+    private void setOffset(int offset) {
+        mediaPlayer.seekTo(mediaPlayer.getCurrentPosition() + offset);
+        monitorHandler.sendEmptyMessage(offset);
     }
 }

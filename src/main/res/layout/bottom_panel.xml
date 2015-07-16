@@ -9,8 +9,8 @@
         android:id="@+id/progressBar"
         style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="match_parent"
-        android:layout_height="3dp"
-        android:layout_marginTop="10dp"
+        android:layout_height="5dp"
+        android:layout_marginTop="15dp"
         android:layout_marginLeft="10dp"
         android:layout_marginStart="10dp"
         android:layout_marginRight="10dp"
@@ -67,19 +67,19 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/ic_media_previous" />
             <ImageView
-                android:id="@+id/pr_pr"
+                android:id="@+id/fast_rewind"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/ic_media_rew" />
+                android:background="@drawable/fast_rewind" />
             <ImageView
                 android:id="@+id/play"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <ImageView
-                android:id="@+id/next"
+                android:id="@+id/fast_forward"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/ic_media_ff" />
+                android:background="@drawable/fast_forward" />
             <ImageView
                 android:id="@+id/next_next"
                 android:layout_width="wrap_content"

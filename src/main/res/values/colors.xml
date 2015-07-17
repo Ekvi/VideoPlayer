@@ -4,4 +4,6 @@
     <color name="top_bottom_background">#AA000000</color>
     <color name="textColor">#FFFFFF</color>
     <color name="progressBar">#BDBDBD</color>
+    <color name="playList">#616161</color>
+    <color name="line">#BDBDBD</color>
 </resources>

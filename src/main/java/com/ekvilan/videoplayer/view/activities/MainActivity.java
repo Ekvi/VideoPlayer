@@ -10,6 +10,7 @@ import android.os.Message;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -19,7 +20,6 @@ import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 
 import com.ekvilan.videoplayer.R;
 import com.ekvilan.videoplayer.models.Video;
@@ -36,6 +36,7 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 public class MainActivity extends Activity implements SurfaceHolder.Callback, MediaPlayer.OnPreparedListener {
     private final int OFFSET = 30 * 1000;
+    private final int DELAY = 3000;
 
     private MediaPlayer mediaPlayer;
     private SurfaceHolder surfaceHolder;
@@ -48,8 +49,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
     private ImageView btnRewind;
     private ImageView btnPlaylist;
     private ProgressBar progressBar;
+    private PopupWindow playList;
     private RecyclerView recyclerView;
     private TextView tvName;
+
+    private Handler handler = new Handler();
 
     private boolean isShow = false;
     private boolean isMute = false;
@@ -96,40 +100,62 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
                     showPanels();
                     isShow = true;
                     startTimer();
+                } else {
+                    closePlayList();
+                    startTimer();
                 }
+            }
+        });
+
+        topPanel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closePlayList();
+                startTimer();
+            }
+        });
+
+        bottomPanel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closePlayList();
+                startTimer();
             }
         });
 
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Drawable drawable;
                 if(mediaPlayer.isPlaying()) {
                     mediaPlayer.pause();
-                    Drawable d = ResourcesCompat.getDrawable(getResources(), R.drawable.play, null);
-                    setImage(btnPlay, d);
+                    drawable = ResourcesCompat.getDrawable(getResources(), R.drawable.play, null);
                 } else {
                     mediaPlayer.start();
-                    Drawable d = ResourcesCompat.getDrawable(getResources(), R.drawable.pause, null);
-                    setImage(btnPlay, d);
+                    drawable = ResourcesCompat.getDrawable(getResources(), R.drawable.pause, null);
                     startTimer();
                 }
+                setImage(btnPlay, drawable);
+                closePlayList();
             }
         });
 
         btnSound.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Drawable draw;
                 if(!isMute) {
-                    Drawable d = ResourcesCompat.getDrawable(getResources(), R.drawable.volume_off, null);
-                    setImage(btnSound, d);
+                    draw = ResourcesCompat.getDrawable(getResources(), R.drawable.volume_off, null);
                     setVolume(0f);
                     isMute = true;
                 } else {
-                    Drawable d = ResourcesCompat.getDrawable(getResources(), R.drawable.volume_on, null);
-                    setImage(btnSound, d);
+                    draw = ResourcesCompat.getDrawable(getResources(), R.drawable.volume_on, null);
                     setVolume(1);
                     isMute = false;
                 }
+                setImage(btnSound, draw);
+                closePlayList();
+                startTimer();
             }
         });
 
@@ -137,6 +163,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
             @Override
             public void onClick(View v) {
                 setOffset(OFFSET);
+                closePlayList();
+                startTimer();
             }
         });
 
@@ -144,6 +172,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
             @Override
             public void onClick(View v) {
                 setOffset(-OFFSET);
+                closePlayList();
+                startTimer();
             }
         });
 
@@ -151,6 +181,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
             @Override
             public void onClick(View v) {
                 showPlayList();
+                handler.removeCallbacks(hide);
+                isShow = true;
             }
         });
     }
@@ -160,33 +192,24 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
         bottomPanel.setVisibility(View.VISIBLE);
     }
 
-    private void dismissPanels() {
+    private void hidePanels() {
         topPanel.setVisibility(View.GONE);
         bottomPanel.setVisibility(View.GONE);
     }
 
     private void startTimer() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(mediaPlayer.isPlaying()) {
-                            dismissPanels();
-                            isShow = false;
-                        }
-                    }
-                });
-            }
-        }).start();
+        handler.removeCallbacks(hide);
+        handler.postDelayed(hide, DELAY);
     }
+
+    private Runnable hide = new Runnable() {
+        public void run() {
+            if(mediaPlayer.isPlaying()) {
+                hidePanels();
+                isShow = false;
+            }
+        }
+    };
 
     @Override
     public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2, int arg3) {
@@ -237,29 +260,27 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
                 new Runnable(){
                     @Override
                     public void run() {
-                        monitorHandler.sendMessage(monitorHandler.obtainMessage());
+                        handler.post(progressUpdater);
                     }}, 200, 200, TimeUnit.MILLISECONDS);
     }
 
-    private Handler monitorHandler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
+    private Runnable progressUpdater = new Runnable() {
+        public void run() {
             progressBar.setMax(mediaPlayer.getDuration());
-            progressBar.setProgress(mediaPlayer.getCurrentPosition() + msg.what);
-
+            progressBar.setProgress(mediaPlayer.getCurrentPosition());
         }
     };
 
     private void setOffset(int offset) {
         mediaPlayer.seekTo(mediaPlayer.getCurrentPosition() + offset);
-        monitorHandler.sendEmptyMessage(offset);
+        handler.sendEmptyMessage(mediaPlayer.getCurrentPosition() + offset);
     }
 
     private void showPlayList() {
         LayoutInflater layoutInflater = (LayoutInflater)getBaseContext()
                 .getSystemService(LAYOUT_INFLATER_SERVICE);
         View popupView = layoutInflater.inflate(R.layout.playlist, null);
-        PopupWindow playList = new PopupWindow(popupView, WRAP_CONTENT, WRAP_CONTENT);
+        playList = new PopupWindow(popupView, WRAP_CONTENT, WRAP_CONTENT);
 
         initPlayListView(popupView);
 
@@ -283,6 +304,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Me
 
         recyclerView.setAdapter(new VideoAdapter(this, videos));
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+    }
+
+    private void closePlayList() {
+        if(playList != null) {
+            playList.dismiss();
+        }
     }
 }
 

@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.ekvilan.videoplayer.R;
 import com.ekvilan.videoplayer.controllers.VideoController;
@@ -46,6 +47,7 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
     private ProgressBar progressBar;
     private PopupWindow playList;
     private RecyclerView recyclerView;
+    private TextView tvName;
 
     private Handler handler = new Handler();
     private VideoController videoController;
@@ -79,6 +81,7 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
         btnNext = (ImageView) findViewById(R.id.next);
         btnPlaylist = (ImageView) findViewById(R.id.playlist);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        tvName = (TextView) findViewById(R.id.video_name);
     }
 
     private void initVideoHolder() {
@@ -172,6 +175,7 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
                 if(position > 0) {
                     startNewVideo(--position);
                     checkPrevNextButtons();
+                    setText(tvName, videoController.getVideoList().get(position).getName());
                 }
             }
         });
@@ -182,6 +186,7 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
                 if(position < videoController.getVideoList().size() - 1) {
                     startNewVideo(++position);
                     checkPrevNextButtons();
+                    setText(tvName, videoController.getVideoList().get(position).getName());
                 }
             }
         });
@@ -232,6 +237,8 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
 
         setImage(btnPlay, ResourcesCompat.getDrawable(getResources(), R.drawable.pause, null));
         setImage(btnSound, ResourcesCompat.getDrawable(getResources(), R.drawable.volume_on, null));
+        setText(tvName, videoController.getVideoList().get(position).getName());
+
         checkPrevNextButtons();
     }
 
@@ -242,6 +249,10 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
 
     private void setImage(ImageView imageView, Drawable drawable) {
         imageView.setImageDrawable(drawable);
+    }
+
+    private void setText(TextView textView, String value) {
+        textView.setText(value);
     }
 
     private void setVolume(float value) {
@@ -292,6 +303,7 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
                     @Override
                     public void onItemClick(View view, int position) {
                         startNewVideo(position);
+                        setText(tvName, videoController.getVideoList().get(position).getName());
                         checkPrevNextButtons();
                     }
                 })
@@ -321,6 +333,7 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
         } else {
             btnPrev.setVisibility(View.GONE);
         }
+
         if(position < videoController.getVideoList().size() - 1) {
             btnNext.setVisibility(View.VISIBLE);
         } else {

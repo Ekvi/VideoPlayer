@@ -40,6 +40,8 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
     private ImageView btnSound;
     private ImageView btnForward;
     private ImageView btnRewind;
+    private ImageView btnPrev;
+    private ImageView btnNext;
     private ImageView btnPlaylist;
     private ProgressBar progressBar;
     private PopupWindow playList;
@@ -49,6 +51,7 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
 
     private boolean isShow = false;
     private boolean isMute = false;
+    private int position = 0;
     private VideoController videoController;
 
     @Override
@@ -71,6 +74,8 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
         btnSound = (ImageView) findViewById(R.id.sound);
         btnForward = (ImageView) findViewById(R.id.fast_forward);
         btnRewind = (ImageView) findViewById(R.id.fast_rewind);
+        btnPrev = (ImageView) findViewById(R.id.prev);
+        btnNext = (ImageView) findViewById(R.id.next);
         btnPlaylist = (ImageView) findViewById(R.id.playlist);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
     }
@@ -160,6 +165,26 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
             }
         });
 
+        btnPrev.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(position > 0) {
+                    startNewVideo(--position);
+                    checkPrevNextButtons();
+                }
+            }
+        });
+
+        btnNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(position < videoController.getVideoList().size() - 1) {
+                    startNewVideo(++position);
+                    checkPrevNextButtons();
+                }
+            }
+        });
+
         btnPlaylist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -201,11 +226,12 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        videoController.createPlayer(holder, 1);
+        videoController.createPlayer(holder, position);
         updateProgressBar();
 
         setImage(btnPlay, ResourcesCompat.getDrawable(getResources(), R.drawable.pause, null));
         setImage(btnSound, ResourcesCompat.getDrawable(getResources(), R.drawable.volume_on, null));
+        checkPrevNextButtons();
     }
 
     @Override
@@ -264,8 +290,7 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
                 new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View view, int position) {
-                        videoController.finish();
-                        videoController.createPlayer(surfaceHolder, position);
+                        startNewVideo(position);
                     }
                 })
         );
@@ -280,6 +305,25 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
     private void releaseView() {
         closePlayList();
         startTimer();
+    }
+
+    private void startNewVideo(int position) {
+        videoController.finish();
+        videoController.createPlayer(surfaceHolder, position);
+        this.position = position;
+    }
+
+    private void checkPrevNextButtons() {
+        if(position > 0) {
+            btnPrev.setVisibility(View.VISIBLE);
+        } else {
+            btnPrev.setVisibility(View.GONE);
+        }
+        if(position < videoController.getVideoList().size() - 1) {
+            btnNext.setVisibility(View.VISIBLE);
+        } else {
+            btnNext.setVisibility(View.GONE);
+        }
     }
 }
 

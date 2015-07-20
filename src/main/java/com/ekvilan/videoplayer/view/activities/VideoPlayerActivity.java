@@ -201,7 +201,7 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        videoController.createPlayer(holder);
+        videoController.createPlayer(holder, 1);
         updateProgressBar();
 
         setImage(btnPlay, ResourcesCompat.getDrawable(getResources(), R.drawable.pause, null));
@@ -264,7 +264,8 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
                 new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View view, int position) {
-
+                        videoController.finish();
+                        videoController.createPlayer(surfaceHolder, position);
                     }
                 })
         );

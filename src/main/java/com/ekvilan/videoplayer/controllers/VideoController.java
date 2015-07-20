@@ -26,11 +26,13 @@ public class VideoController implements MediaPlayer.OnPreparedListener {
         videos.add(new Video("Пустая ссылка 2", ""));
     }
 
-    public void createPlayer(SurfaceHolder surfaceHolder) {
+    public void createPlayer(SurfaceHolder surfaceHolder, int position) {
         try {
             mediaPlayer = new MediaPlayer();
             mediaPlayer.setDisplay(surfaceHolder);
-            mediaPlayer.setDataSource(videos.get(1).getUrl());
+            if(!videos.get(position).getUrl().isEmpty()) {
+                mediaPlayer.setDataSource(videos.get(position).getUrl());
+            }
             mediaPlayer.prepare();
             mediaPlayer.setOnPreparedListener(this);
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -71,6 +73,11 @@ public class VideoController implements MediaPlayer.OnPreparedListener {
 
     public void setOffset(int value) {
         mediaPlayer.seekTo(value);
+    }
+
+    public void finish() {
+        mediaPlayer.release();
+        mediaPlayer = null;
     }
 
     public List<Video> getVideoList() {

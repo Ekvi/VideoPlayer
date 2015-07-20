@@ -48,11 +48,12 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
     private RecyclerView recyclerView;
 
     private Handler handler = new Handler();
+    private VideoController videoController;
 
     private boolean isShow = false;
     private boolean isMute = false;
-    private int position = 0;
-    private VideoController videoController;
+    private int position = 1;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -291,6 +292,7 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
                     @Override
                     public void onItemClick(View view, int position) {
                         startNewVideo(position);
+                        checkPrevNextButtons();
                     }
                 })
         );
